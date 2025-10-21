@@ -1,29 +1,38 @@
 name: Update README
 
+# Triggers: every hour and manual trigger
 on:
   schedule:
-    - cron: '0 * * * *'    # Runs every hour
-  workflow_dispatch:       # Manual run
+    - cron: '0 * * * *'   # every hour
+  workflow_dispatch:       # allows manual run
 
 jobs:
-  build:
+  update-readme:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      # Step 1: Checkout the repo with full history (needed for pushes)
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: pip install requests
-      - name: Run script
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-        run: python update_readme.py
-      - name: Commit changes
+          fetch-depth: 0
+
+      # Step 2: Set Git user (required to commit)
+      - name: Set up Git
         run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      # Step 3: Update README (example: append current date/time)
+      - name: Update README
+        run: |
+          echo "Updated at $(date)" >> README.md
+
+      # Step 4: Commit and push changes
+      - name: Commit and push changes
+        run: |
           git add README.md
-          git commit -m "Update README" || echo "No changes"
+          git commit -m "Automated README update" || echo "No changes to commit"
           git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
