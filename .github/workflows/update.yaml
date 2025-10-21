@@ -1,34 +1,29 @@
 name: Update README
 
-# Triggers: every hour and manual trigger
 on:
   schedule:
-    - cron: '0 * * * *'   # every hour
-  workflow_dispatch:       # allows manual run
+    - cron: '0 * * * *'
+  workflow_dispatch:
 
 jobs:
   update-readme:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Checkout the repo with full history (needed for pushes)
       - name: Checkout repository
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          persist-credentials: true   # <- allows git push
 
-      # Step 2: Set Git user (required to commit)
       - name: Set up Git
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-      # Step 3: Update README (example: append current date/time)
       - name: Update README
         run: |
           echo "Updated at $(date)" >> README.md
 
-      # Step 4: Commit and push changes
       - name: Commit and push changes
         run: |
           git add README.md
